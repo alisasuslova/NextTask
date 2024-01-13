@@ -1,3 +1,5 @@
+## Входные данные:
+
 С помощью Java:
 а) Считать файл (https://github.com/PeacockTeam/new-job/releases/download/v1.0/lng-4.txt.gz), состоящий из строк вида 
 
@@ -73,3 +75,57 @@ A3;B3
 java -jar {название проекта}.jar тестовый-файл.txt
 
 Правильно написанный алгоритм не должен потреблять много памяти (запускать с ограничением по памяти 1Гб (-Xmx1G))
+
+## Реализация:
+
+1. В Main создала поток на чтение информации из файла, и Map для помещения в нее в дальнейшем этой информации:
+```java
+    Map<String, Set<String>> groups = new HashMap<>();
+        URL url = new URL("https://github.com/PeacockTeam/new-job/releases/download/v1.0/lng-4.txt.gz");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(url.openStream())));
+```
+2. Завела переменную для хранения одной большой строки, и цикл, который читал строку и разбивал ее на части по знаку ";". Заполнял множество таким образом, что "часть строки" являлась бы ключом в HashSet, это позволит избежать дубликатов:
+```java
+    public static int[] createArray(int count, int lowBorder, int upBorder) String line;
+        while ((line = reader.readLine()) != null) {
+            String[] parts = line.split(";");
+            for (String part : parts) {
+                if (!part.isEmpty()) {
+                    groups.computeIfAbsent(part, k -> new HashSet<>()).add(line);
+                }
+            }
+        }
+```
+3. Создала список из множества строк по типу `ArrayList`. В цикле перебрала элементы множества, и если элементов оказалось больше двух, записала в переменную `result`:
+```java
+    List<Set<String>> result = new ArrayList<>();
+        for (Set<String> group : groups.values()) {
+            if (group.size() > 1) {
+                result.add(group);
+            }
+        }
+```
+4. Отсортировала список в обратной последовательности от большего к меньшему, где критерием было количество элементов в каждой группе:
+```java
+    result.sort((set1, set2) -> Integer.compare(set2.size(), set1.size()));
+```
+5. Последний метод, для вывода результаов выполнения программы по заданному в условии шаблону:
+```java
+    try (PrintWriter writer = new PrintWriter("output.txt")) {
+            writer.println("Количество групп с более чем одним элементом: " + result.size());
+            for (int i = 0; i < result.size(); i++) {
+                writer.println("Группа " + (i + 1) + ", количество элементов: " + result.get(i).size());
+                for (String str : result.get(i)) {
+                    writer.println(str);
+                }
+            }
+        }
+```
+
+## Выходные данные:
+
+[Ссылка на скрин результата работы программы](https://github.com/alisasuslova/NextTask/blob/main/result.JPG)
+
+[Ссылка на файл output.txt](https://github.com/alisasuslova/NextTask/blob/main/output.txt)
+
+[Ссылка на jar](https://github.com/alisasuslova/NextTask/blob/main/out/artifacts/NextTask_jar/NextTask.jar)
